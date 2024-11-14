@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ygking_design_ui/src/buttons/yg_button.dart';
+import 'package:ygking_design_ui/src/buttons/yg_button_style.dart';
 import '../../widgets/yg_nav_bar.dart';
+import '../../src/input/yg_input.dart';
+import '../../themes/yg_theme_colors.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,9 +18,9 @@ class HomePage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHeader(),
-                  _buildFeatures(),
-                  _buildComponentShowcase(),
+                  _buildHeader(context),
+                  _buildFeatures(context),
+                  // _buildComponentShowcase(context),
                   _buildFooter(),
                 ],
               ),
@@ -27,79 +31,100 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Container(
-      height: 500,
-      color: const Color(0xFF1890FF),
+      height: isMobile ? 400 : 500,
+      color: YGThemeColors.primary,
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'YGking Design UI',
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '一个现代化的Flutter UI组件库',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF1890FF),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'YGking Design UI',
+                style: TextStyle(
+                  fontSize: isMobile ? 32 : 48,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
+                textAlign: TextAlign.center,
               ),
-              child: const Text('开始使用'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                '一个现代化的Flutter UI组件库',
+                style: TextStyle(
+                  fontSize: isMobile ? 18 : 24,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/components');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: YGThemeColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 24 : 32,
+                    vertical: isMobile ? 12 : 16,
+                  ),
+                ),
+                child: const Text('开始使用'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatures() {
+  Widget _buildFeatures(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+      padding: EdgeInsets.symmetric(
+        vertical: isMobile ? 32 : 64,
+        horizontal: isMobile ? 16 : 32,
+      ),
       child: Column(
         children: [
-          const Text(
+          Text(
             '特性',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: isMobile ? 24 : 32,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 48),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          SizedBox(height: isMobile ? 24 : 48),
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
+            alignment: WrapAlignment.center,
             children: [
               _buildFeatureCard(
                 icon: Icons.speed,
                 title: '高性能',
                 description: '经过优化的组件确保流畅的用户体验',
+                isMobile: isMobile,
               ),
               _buildFeatureCard(
                 icon: Icons.brush,
                 title: '可定制',
                 description: '灵活的主题系统，轻松适应不同品牌',
+                isMobile: isMobile,
               ),
               _buildFeatureCard(
                 icon: Icons.devices,
                 title: '响应式',
                 description: '完美适配各种屏幕尺寸',
+                isMobile: isMobile,
               ),
             ],
           ),
@@ -112,21 +137,23 @@ class HomePage extends StatelessWidget {
     required IconData icon,
     required String title,
     required String description,
+    required bool isMobile,
   }) {
     return SizedBox(
-      width: 300,
+      width: isMobile ? double.infinity : 300,
       child: Card(
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
           child: Column(
             children: [
-              Icon(icon, size: 48, color: const Color(0xFF1890FF)),
+              Icon(icon,
+                  size: isMobile ? 36 : 48, color: YGThemeColors.primary),
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 24,
+                style: TextStyle(
+                  fontSize: isMobile ? 20 : 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -134,8 +161,8 @@ class HomePage extends StatelessWidget {
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: isMobile ? 14 : 16,
                   color: Colors.grey,
                 ),
               ),
@@ -146,23 +173,97 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildComponentShowcase() {
+  Widget _buildComponentShowcase(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+      padding: EdgeInsets.symmetric(
+        vertical: isMobile ? 32 : 64,
+        horizontal: isMobile ? 16 : 32,
+      ),
       color: Colors.grey[100],
       child: Column(
         children: [
-          const Text(
+          Text(
             '组件展示',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: isMobile ? 24 : 32,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 48),
-          // 这里后续添加组件展示
-          const Text('组件展示区域 - 待实现'),
+          SizedBox(height: isMobile ? 24 : 48),
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildShowcaseCard(
+                title: '按钮',
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    YGButton(
+                      text: '主要按钮',
+                      onPressed: () {},
+                    ),
+                    YGButton(
+                      text: '次要按钮',
+                      onPressed: () {},
+                      style: YGButtonStyle.secondary,
+                    ),
+                  ],
+                ),
+                isMobile: isMobile,
+              ),
+              _buildShowcaseCard(
+                title: '输入框',
+                child: Column(
+                  children: const [
+                    YGInput(
+                      placeholder: '请输入内容',
+                    ),
+                    SizedBox(height: 16),
+                    YGInput(
+                      placeholder: '禁用状态',
+                      disabled: true,
+                    ),
+                  ],
+                ),
+                isMobile: isMobile,
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShowcaseCard({
+    required String title,
+    required Widget child,
+    required bool isMobile,
+  }) {
+    return Card(
+      elevation: 2,
+      child: Container(
+        width: isMobile ? double.infinity : 400,
+        padding: EdgeInsets.all(isMobile ? 16 : 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: isMobile ? 16 : 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -177,6 +278,7 @@ class HomePage extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );

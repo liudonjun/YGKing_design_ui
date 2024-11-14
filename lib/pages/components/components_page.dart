@@ -1,194 +1,184 @@
 import 'package:flutter/material.dart';
-import 'package:ygking_design_ui/src/buttons/yg_button_style.dart';
 import '../../widgets/yg_nav_bar.dart';
-import '../../src/buttons/yg_button.dart';
+import '../../routes/component_routes.dart';
+import '../../themes/yg_theme_colors.dart';
 
-class ComponentsPage extends StatelessWidget {
+class ComponentsPage extends StatefulWidget {
   const ComponentsPage({Key? key}) : super(key: key);
 
   @override
+  State<ComponentsPage> createState() => _ComponentsPageState();
+}
+
+class _ComponentsPageState extends State<ComponentsPage> {
+  late String currentPath;
+
+  @override
+  void initState() {
+    super.initState();
+    currentPath = ComponentRoutes.routes.first.path;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bool isMobile = screenWidth < 768;
+    final ComponentRoute? currentRoute =
+        ComponentRoutes.getRouteByPath(currentPath);
+
     return Scaffold(
-      body: Column(
-        children: [
-          const YGNavBar(),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 左侧导航菜单
-                SizedBox(
-                  width: 240,
-                  child: _buildSideMenu(),
-                ),
-                // 右侧内容区
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildButtonSection(),
-                      ],
+      drawer: isMobile
+          ? Drawer(
+              child: Column(
+                children: [
+                  Container(
+                    height: 64,
+                    color: Colors.white,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'YGking Design',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: YGThemeColors.primary,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Container(
+                      color: Colors.grey[100],
+                      child: SingleChildScrollView(
+                        child: _buildSideMenu(isMobile),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : null,
+      body: Builder(
+        builder: (context) => Column(
+          children: [
+            YGNavBar(
+              onMenuPressed: isMobile
+                  ? () {
+                      Scaffold.of(context).openDrawer();
+                    }
+                  : null,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSideMenu() {
-    return Container(
-      color: Colors.grey[100],
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              '通用',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!isMobile)
+                    Container(
+                      width: 240,
+                      height: screenHeight - 64,
+                      color: Colors.grey[100],
+                      child: SingleChildScrollView(
+                        child: _buildSideMenu(isMobile),
+                      ),
+                    ),
+                  Expanded(
+                    child: Container(
+                      height: screenHeight - 64,
+                      color: Colors.white,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.all(isMobile ? 16 : 24),
+                        child:
+                            currentRoute?.builder(context) ?? const SizedBox(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          _buildMenuItem('按钮 Button', true),
-          _buildMenuItem('图标 Icon', false),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              '布局',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-          _buildMenuItem('栅格 Grid', false),
-          _buildMenuItem('间距 Space', false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(String title, bool isSelected) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: isSelected ? Colors.blue.withOpacity(0.1) : null,
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? const Color(0xFF1890FF) : Colors.black87,
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildButtonSection() {
+  Widget _buildSideMenu(bool isMobile) {
+    final groupedRoutes = ComponentRoutes.getGroupedRoutes();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '按钮 Button',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
+      children: groupedRoutes.entries.map((entry) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 12 : 16,
+                vertical: isMobile ? 6 : 8,
+              ),
+              child: Text(
+                entry.key,
+                style: TextStyle(
+                  fontSize: isMobile ? 12 : 14,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            ...entry.value.map((route) => _buildMenuItem(
+                  route.title,
+                  route.path,
+                  route.icon,
+                  currentPath == route.path,
+                  isMobile,
+                )),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMenuItem(
+    String title,
+    String path,
+    IconData? icon,
+    bool isSelected,
+    bool isMobile,
+  ) {
+    return Builder(
+      builder: (context) => InkWell(
+        onTap: () {
+          setState(() {
+            currentPath = path;
+            if (isMobile) {
+              Navigator.of(context).pop();
+            }
+          });
+        },
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 12 : 16,
+            vertical: isMobile ? 8 : 12,
           ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '按钮用于开始一个即时操作。',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 48),
-        _buildDemoCard(
-          title: '按钮类型',
-          description: 'YGking Design 为您提供了五种按钮类型',
-          demo: Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          color: isSelected ? YGThemeColors.primary.withOpacity(0.1) : null,
+          child: Row(
             children: [
-              YGButton(
-                text: '主要按钮',
-                onPressed: () {},
-                style: YGButtonStyle.primary,
-              ),
-              YGButton(
-                text: '次要按钮',
-                onPressed: () {},
-                style: YGButtonStyle.secondary,
-              ),
-              YGButton(
-                text: '文本按钮',
-                onPressed: () {},
-                style: YGButtonStyle.text,
-              ),
-              YGButton(
-                text: '危险按钮',
-                onPressed: () {},
-                style: YGButtonStyle.danger,
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: isMobile ? 14 : 16,
+                  color: isSelected ? YGThemeColors.primary : Colors.black87,
+                ),
+                SizedBox(width: isMobile ? 6 : 8),
+              ],
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? YGThemeColors.primary : Colors.black87,
+                  fontSize: isMobile ? 13 : 14,
+                ),
               ),
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildDemoCard({
-    required String title,
-    required String description,
-    required Widget demo,
-  }) {
-    return Card(
-      elevation: 1,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: demo,
-          ),
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Colors.grey[200]!,
-                ),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

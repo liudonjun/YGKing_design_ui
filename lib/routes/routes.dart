@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pages/home/home_page.dart';
 import '../pages/components/components_page.dart';
+import '../pages/docs/docs_page.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -11,7 +12,7 @@ class AppRoutes {
     return {
       home: (context) => const HomePage(),
       components: (context) => const ComponentsPage(),
-      // 后续添加其他路由
+      docs: (context) => const DocsPage(),
     };
   }
 }
